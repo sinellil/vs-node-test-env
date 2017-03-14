@@ -52,7 +52,7 @@ const coreBundles = {
 /**
  * Main Webpack Configuration
  */
-var Config = {
+var Config: any = {
   entry: {
     "app": ["./src/main" /* this is filled by the aurelia-webpack-plugin */],
     "aurelia-bootstrap": coreBundles.bootstrap,
@@ -129,18 +129,7 @@ var Config = {
         test: /\.(png|jpe?g|gif|svg|eot|woff|woff2|ttf)$/,
         use: "url-loader"
       },
-      { test: /\.json$/, loader: "json-loader" },
-      {
-          test: /\.(ts|js)$/,
-          loader: "sourcemap-istanbul-instrumenter-loader",
-          query: {
-              esModules: true,
-              compact: false
-          },
-          enforce: "post",
-          include: srcDir,
-          exclude: /node_modules/
-      }
+      { test: /\.json$/, loader: "json-loader" }
     ]
   },
   plugins: [
@@ -175,6 +164,23 @@ if (env !== "test") {
         name: ["aurelia", "aurelia-bootstrap"]
       }));
   }
+} else {
+    if (Config.module.rules) {
+        const obj = {
+            test: /\.(jsx?|tsx?)$/i,
+            loader: "istanbul-instrumenter-loader",
+            query: {
+                esModules: true,
+                compact: false
+            },
+            enforce: "post",
+            include: srcDir,
+            exclude: [/node_modules/, /\.spec.(tsx?|jsx?)/]
+        };
+
+        Config.module.rules.push(obj);
+        Config.devServer.port = 19876;
+    }
 }
 
 module.exports = Config;
